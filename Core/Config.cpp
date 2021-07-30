@@ -1079,11 +1079,54 @@ static int DefaultSystemParamLanguage() {
 	return defaultLang;
 }
 
+bool IsXperiaPlay(const std::string &name) {
+    return name == "Sony Ericsson:R800a"
+        || name == "Sony Ericsson:R800i"
+        || name == "Sony Ericsson:R800x"
+        || name == "Sony Ericsson:R800at"
+        || name == "Sony Ericsson:SO-01D"
+        || name == "Sony Ericsson:zeus";
+}
+
+static const char* DefaultNickname() {
+    if (IsXperiaPlay(System_GetProperty(SYSPROP_NAME))) {
+        return "XperiaPlay";
+    }
+    return "PPSSPP";
+}
+
+static const char* print_mac_addr()
+{
+    FILE *ifp, *ofp;
+    char *mode = "r";
+
+    ifp = fopen("/sys/class/net/eth0/address", mode);
+
+    if (ifp == NULL) {
+        return CreateRandMAC();
+    }
+
+    char mac_addr [ 17 ];
+    while (fgets(mac_addr, sizeof mac_addr, ifp) != NULL) {
+
+    }
+
+    fclose(ifp);
+
+    return mac_addr;
+}
+
 static ConfigSetting systemParamSettings[] = {
 	ReportedConfigSetting("PSPModel", &g_Config.iPSPModel, &DefaultPSPModel, true, true),
 	ReportedConfigSetting("PSPFirmwareVersion", &g_Config.iFirmwareVersion, PSP_DEFAULT_FIRMWARE, true, true),
-	ConfigSetting("NickName", &g_Config.sNickName, "PPSSPP", true, true),
-	ConfigSetting("MacAddress", &g_Config.sMACAddress, "", true, true),
+	ConfigSetting("NickName", &g_Config.sNickName, &DefaultNickname, true, true),
+	ConfigSetting("proAdhocServer", &g_Config.proAdhocServer, "coldbird.net", true, true),
+#ifdef ANDROID
+    ConfigSetting("MacAddress", &g_Config.sMACAddress, &print_mac_addr, true, true),
+#else
+	ConfigSetting("MacAddress", &g_Config.sMACAddress, &CreateRandMAC, true, true),
+#endif
+	ConfigSetting("PortOffset", &g_Config.iPortOffset, 0, true, true),
 	ReportedConfigSetting("Language", &g_Config.iLanguage, &DefaultSystemParamLanguage, true, true),
 	ConfigSetting("ParamTimeFormat", &g_Config.iTimeFormat, PSP_SYSTEMPARAM_TIME_FORMAT_24HR, true, true),
 	ConfigSetting("ParamDateFormat", &g_Config.iDateFormat, PSP_SYSTEMPARAM_DATE_FORMAT_YYYYMMDD, true, true),
